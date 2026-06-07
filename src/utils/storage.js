@@ -46,6 +46,7 @@ export const saveGalleryItems = async (items) => {
 };
 
 export const loadGalleryItems = async () => {
+  let cloudItems = null;
   try {
     // 1. Try to load from Supabase (Cloud) first for latest data
     const { data, error } = await supabase
@@ -55,21 +56,32 @@ export const loadGalleryItems = async () => {
       .single();
 
     if (data && data.data) {
-      return data.data;
+      cloudItems = data.data;
+    } else if (error) {
+      console.warn("Supabase load returned error, will fallback to local storage:", error.message);
     }
+  } catch (error) {
+    console.warn("Supabase connection failed, falling back to local storage:", error);
+  }
 
-    // 2. Fallback to Local if Cloud fails or is empty
+  // If cloud fetch was successful and has data, return it
+  if (cloudItems) {
+    return cloudItems;
+  }
+
+  // 2. Fallback to Local IndexedDB if Cloud fails or has no data
+  try {
     const db = await openDB();
     const transaction = db.transaction(STORE_NAME, 'readonly');
     const store = transaction.objectStore(STORE_NAME);
     const request = store.get('current_items');
     
     return new Promise((resolve, reject) => {
-      request.onsuccess = () => resolve(request.result);
+      request.onsuccess = () => resolve(request.result || null);
       request.onerror = (event) => reject(event.target.error);
     });
-  } catch (error) {
-    console.error("Storage Load Error:", error);
+  } catch (localError) {
+    console.error("Local database load failed:", localError);
     return null;
   }
 };

@@ -193,7 +193,7 @@ const Gallery = ({ initialFilter = 'All' }) => {
         ))}
       </div>
 
-      <div className="gallery-horizontal-scroll">
+      <div className="gallery-grid">
         <AnimatePresence>
           {filteredItems.map((item) => (
             <motion.div 
