@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Phone, ShieldCheck, Users, Edit3, Camera, X, Upload, Link, Trash2 } from 'lucide-react';
+import { Phone, ShieldCheck, Users, Edit3, Camera, X, Upload, Link, Trash2, Plus } from 'lucide-react';
 import { supabase } from '../supabase_client';
 
 const Organizers = () => {
@@ -28,6 +28,8 @@ const Organizers = () => {
   const [isLoaded, setIsLoaded] = React.useState(false);
   const [managingPhoto, setManagingPhoto] = React.useState(null); // { id, name, type, image }
   const [manualUrl, setManualUrl] = React.useState('');
+  const [managingSegment, setManagingSegment] = React.useState(null); // 'main', 'lead', or 'field'
+  const [tempSegmentList, setTempSegmentList] = React.useState([]);
 
   React.useEffect(() => {
     const loadData = async () => {
@@ -159,9 +161,15 @@ const Organizers = () => {
       <div className="section-header-flex">
         <h2 className="section-title">Tournament <span>Organizers</span></h2>
         {isAdmin && (
-          <button className="btn-secondary manage-btn">
+          <button 
+            className="btn-secondary manage-btn"
+            onClick={() => {
+              setManagingSegment('main');
+              setTempSegmentList([...mainOrganizers]);
+            }}
+          >
             <Edit3 size={14} style={{ marginRight: '8px' }} />
-            Manage Team
+            Manage Organizers
           </button>
         )}
       </div>
@@ -210,6 +218,18 @@ const Organizers = () => {
 
       <div className="section-header-flex" style={{ marginTop: '4rem', marginBottom: '2rem' }}>
         <h3 className="section-title" style={{ fontSize: '2.5rem' }}>Lead <span>Support</span></h3>
+        {isAdmin && (
+          <button 
+            className="btn-secondary manage-btn"
+            onClick={() => {
+              setManagingSegment('lead');
+              setTempSegmentList([...leadCoOrganizers]);
+            }}
+          >
+            <Edit3 size={14} style={{ marginRight: '8px' }} />
+            Manage Lead Support
+          </button>
+        )}
       </div>
       <div className="organizers-grid">
         {leadCoOrganizers.map((org) => (
@@ -251,6 +271,18 @@ const Organizers = () => {
 
       <div className="section-header-flex" style={{ marginTop: '4rem', marginBottom: '2rem' }}>
         <h3 className="section-title" style={{ fontSize: '2.5rem' }}>Field <span>Support</span></h3>
+        {isAdmin && (
+          <button 
+            className="btn-secondary manage-btn"
+            onClick={() => {
+              setManagingSegment('field');
+              setTempSegmentList([...coOrganizers]);
+            }}
+          >
+            <Edit3 size={14} style={{ marginRight: '8px' }} />
+            Manage Field Support
+          </button>
+        )}
       </div>
       <div className="organizers-grid">
         {coOrganizers.map((org) => (
@@ -382,6 +414,139 @@ const Organizers = () => {
                     Remove Photo
                   </button>
                 )}
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {managingSegment && (
+          <motion.div 
+            className="lightbox"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setManagingSegment(null)}
+          >
+            <button className="close-btn" onClick={() => setManagingSegment(null)}><X size={32} /></button>
+            <motion.div 
+              className="manage-modal glass"
+              initial={{ scale: 0.9, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              onClick={(e) => e.stopPropagation()}
+              style={{ maxWidth: '600px', width: '90%' }}
+            >
+              <div className="modal-header">
+                <h3>
+                  <Edit3 size={20} style={{ marginRight: '8px' }} />
+                  Manage {managingSegment === 'main' ? 'Organizers' : managingSegment === 'lead' ? 'Lead Support' : 'Field Support'}
+                </h3>
+                <p>Add, edit, or remove members in this section.</p>
+              </div>
+
+              <div className="upload-form" style={{ maxHeight: '60vh', overflowY: 'auto', paddingRight: '0.5rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                {tempSegmentList.map((member, idx) => (
+                  <div key={member.id} style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', background: 'rgba(255, 255, 255, 0.02)', padding: '0.75rem', borderRadius: 'var(--radius-default)', border: '1px solid var(--glass-border)' }}>
+                    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                      <input 
+                        type="text" 
+                        value={member.name}
+                        onChange={(e) => {
+                          const updated = [...tempSegmentList];
+                          updated[idx].name = e.target.value;
+                          setTempSegmentList(updated);
+                        }}
+                        placeholder="Member Name"
+                        style={{ width: '100%' }}
+                      />
+                      {managingSegment === 'main' && (
+                        <div style={{ display: 'flex', gap: '0.5rem' }}>
+                          <input 
+                            type="text" 
+                            value={member.phone || ''}
+                            onChange={(e) => {
+                              const updated = [...tempSegmentList];
+                              updated[idx].phone = e.target.value;
+                              setTempSegmentList(updated);
+                            }}
+                            placeholder="Phone Number"
+                            style={{ flex: 1 }}
+                          />
+                          <input 
+                            type="text" 
+                            value={member.role || 'Main Organizer'}
+                            onChange={(e) => {
+                              const updated = [...tempSegmentList];
+                              updated[idx].role = e.target.value;
+                              setTempSegmentList(updated);
+                            }}
+                            placeholder="Role (e.g. Main Organizer)"
+                            style={{ flex: 1 }}
+                          />
+                        </div>
+                      )}
+                    </div>
+                    <button 
+                      type="button" 
+                      className="btn-secondary" 
+                      style={{ color: '#ef4444', borderColor: 'rgba(239, 68, 68, 0.2)', padding: '0.5rem', borderRadius: '50%', width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                      onClick={() => {
+                        setTempSegmentList(tempSegmentList.filter(item => item.id !== member.id));
+                      }}
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  </div>
+                ))}
+
+                {tempSegmentList.length === 0 && (
+                  <p style={{ textAlign: 'center', opacity: 0.5, margin: '2rem 0' }}>No members in this segment yet.</p>
+                )}
+
+                <button 
+                  type="button" 
+                  className="btn-secondary"
+                  style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', width: '100%' }}
+                  onClick={() => {
+                    const newId = 'new_' + Date.now();
+                    const newMember = managingSegment === 'main' 
+                      ? { id: newId, name: '', phone: '', role: 'Main Organizer', image: null }
+                      : { id: newId, name: '', image: null };
+                    setTempSegmentList([...tempSegmentList, newMember]);
+                  }}
+                >
+                  <Plus size={16} />
+                  Add Member
+                </button>
+              </div>
+
+              <div style={{ display: 'flex', gap: '1rem', marginTop: '2rem' }}>
+                <button 
+                  type="button"
+                  className="btn-secondary" 
+                  style={{ flex: 1 }}
+                  onClick={() => setManagingSegment(null)}
+                >
+                  Cancel
+                </button>
+                <button 
+                  type="button"
+                  className="btn-primary" 
+                  style={{ flex: 1, boxShadow: 'none' }}
+                  onClick={() => {
+                    if (managingSegment === 'main') {
+                      setMainOrganizers(tempSegmentList);
+                    } else if (managingSegment === 'lead') {
+                      setLeadCoOrganizers(tempSegmentList);
+                    } else if (managingSegment === 'field') {
+                      setCoOrganizers(tempSegmentList);
+                    }
+                    setManagingSegment(null);
+                  }}
+                >
+                  Save Changes
+                </button>
               </div>
             </motion.div>
           </motion.div>
