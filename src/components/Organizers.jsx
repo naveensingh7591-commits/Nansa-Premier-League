@@ -1,6 +1,6 @@
 import React from 'react';
-import { motion } from 'framer-motion';
-import { Phone, ShieldCheck, Users, Edit3, Camera } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Phone, ShieldCheck, Users, Edit3, Camera, X, Upload, Link, Trash2 } from 'lucide-react';
 import { supabase } from '../supabase_client';
 
 const Organizers = () => {
@@ -26,6 +26,8 @@ const Organizers = () => {
   ]);
 
   const [isLoaded, setIsLoaded] = React.useState(false);
+  const [managingPhoto, setManagingPhoto] = React.useState(null); // { id, name, type, image }
+  const [manualUrl, setManualUrl] = React.useState('');
 
   React.useEffect(() => {
     const loadData = async () => {
@@ -107,34 +109,49 @@ const Organizers = () => {
     }
   };
 
+  const updateOrgImage = (id, type, imageUrl) => {
+    const updateFn = (list) => list.map(item => item.id === id ? { ...item, image: imageUrl } : item);
+    
+    if (type === 'main') {
+      const org = mainOrganizers.find(o => o.id === id);
+      if (imageUrl && org) addToGallery(imageUrl, org.name, org.role);
+      setMainOrganizers(updateFn);
+    } else if (type === 'lead') {
+      const org = leadCoOrganizers.find(o => o.id === id);
+      if (imageUrl && org) addToGallery(imageUrl, org.name, 'Lead Support');
+      setLeadCoOrganizers(updateFn);
+    } else {
+      const org = coOrganizers.find(o => o.id === id);
+      if (imageUrl && org) addToGallery(imageUrl, org.name, 'Field Support');
+      setCoOrganizers(updateFn);
+    }
+  };
+
   const handleImageUpload = async (id, type, e) => {
     const file = e.target.files[0];
     if (file && file.type.startsWith('image/')) {
       const compressedUrl = await compressImage(file);
-      const updateFn = (list) => list.map(item => item.id === id ? { ...item, image: compressedUrl } : item);
-      
-      if (type === 'main') {
-        const org = mainOrganizers.find(o => o.id === id);
-        addToGallery(compressedUrl, org.name, org.role);
-        setMainOrganizers(updateFn);
-      } else if (type === 'lead') {
-        const org = leadCoOrganizers.find(o => o.id === id);
-        addToGallery(compressedUrl, org.name, 'Lead Support');
-        setLeadCoOrganizers(updateFn);
-      } else {
-        const org = coOrganizers.find(o => o.id === id);
-        addToGallery(compressedUrl, org.name, 'Field Support');
-        setCoOrganizers(updateFn);
+      updateOrgImage(id, type, compressedUrl);
+      if (managingPhoto) {
+        setManagingPhoto(prev => ({ ...prev, image: compressedUrl }));
       }
     }
   };
 
-  const PhotoPlaceholder = ({ name, id, type }) => (
-    <label className={`photo-placeholder ${isAdmin ? 'clickable' : ''}`} style={{ width: '100%', height: '100%' }}>
-      {isAdmin && <input type="file" hidden onChange={(e) => handleImageUpload(id, type, e)} accept="image/*" />}
+  const PhotoPlaceholder = ({ org, type }) => (
+    <div 
+      className={`photo-placeholder ${isAdmin ? 'clickable' : ''}`} 
+      style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}
+      onClick={() => {
+        if (isAdmin) {
+          setManagingPhoto({ id: org.id, name: org.name, type, image: org.image });
+          setManualUrl(org.image || '');
+        }
+      }}
+    >
       {isAdmin && <Camera size={20} />}
-      <span>{isAdmin ? 'Add Photo' : name[0]}</span>
-    </label>
+      <span>{isAdmin ? 'Add Photo' : org.name[0]}</span>
+    </div>
   );
 
   return (
@@ -161,14 +178,19 @@ const Organizers = () => {
                 <div className="img-wrapper">
                   <img src={org.image} alt={org.name} className="org-photo" />
                   {isAdmin && (
-                    <label className="change-photo-overlay">
-                      <input type="file" hidden onChange={(e) => handleImageUpload(org.id, 'main', e)} accept="image/*" />
+                    <div 
+                      className="change-photo-overlay"
+                      onClick={() => {
+                        setManagingPhoto({ id: org.id, name: org.name, type: 'main', image: org.image });
+                        setManualUrl(org.image || '');
+                      }}
+                    >
                       <Camera size={16} />
-                    </label>
+                    </div>
                   )}
                 </div>
               ) : (
-                <PhotoPlaceholder name={org.name} id={org.id} type="main" />
+                <PhotoPlaceholder org={org} type="main" />
               )}
               <div className="org-badge">
                 <ShieldCheck size={16} />
@@ -201,14 +223,19 @@ const Organizers = () => {
                 <div className="img-wrapper">
                   <img src={org.image} alt={org.name} className="org-photo" />
                   {isAdmin && (
-                    <label className="change-photo-overlay">
-                      <input type="file" hidden onChange={(e) => handleImageUpload(org.id, 'lead', e)} accept="image/*" />
+                    <div 
+                      className="change-photo-overlay"
+                      onClick={() => {
+                        setManagingPhoto({ id: org.id, name: org.name, type: 'lead', image: org.image });
+                        setManualUrl(org.image || '');
+                      }}
+                    >
                       <Camera size={16} />
-                    </label>
+                    </div>
                   )}
                 </div>
               ) : (
-                <PhotoPlaceholder name={org.name} id={org.id} type="lead" />
+                <PhotoPlaceholder org={org} type="lead" />
               )}
               <div className="org-badge">
                 <ShieldCheck size={16} />
@@ -237,14 +264,19 @@ const Organizers = () => {
                 <div className="img-wrapper">
                   <img src={org.image} alt={org.name} className="org-photo" />
                   {isAdmin && (
-                    <label className="change-photo-overlay">
-                      <input type="file" hidden onChange={(e) => handleImageUpload(org.id, 'field', e)} accept="image/*" />
+                    <div 
+                      className="change-photo-overlay"
+                      onClick={() => {
+                        setManagingPhoto({ id: org.id, name: org.name, type: 'field', image: org.image });
+                        setManualUrl(org.image || '');
+                      }}
+                    >
                       <Camera size={16} />
-                    </label>
+                    </div>
                   )}
                 </div>
               ) : (
-                <PhotoPlaceholder name={org.name} id={org.id} type="field" />
+                <PhotoPlaceholder org={org} type="field" />
               )}
               <div className="org-badge">
                 <ShieldCheck size={16} />
@@ -257,6 +289,104 @@ const Organizers = () => {
           </motion.div>
         ))}
       </div>
+
+      <AnimatePresence>
+        {managingPhoto && (
+          <motion.div 
+            className="lightbox"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setManagingPhoto(null)}
+          >
+            <button className="close-btn" onClick={() => setManagingPhoto(null)}><X size={32} /></button>
+            <motion.div 
+              className="manage-modal glass"
+              initial={{ scale: 0.9, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              onClick={(e) => e.stopPropagation()}
+              style={{ maxWidth: '450px' }}
+            >
+              <div className="modal-header">
+                <h3><Camera size={20} /> Manage Photo</h3>
+                <p>Update photo for <strong>{managingPhoto.name}</strong></p>
+              </div>
+
+              <div className="upload-form">
+                {/* Preview */}
+                <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1rem' }}>
+                  <div className="org-image-container" style={{ width: '150px', height: '150px', margin: 0, borderRadius: '50%', borderStyle: 'solid' }}>
+                    {managingPhoto.image ? (
+                      <img src={managingPhoto.image} alt={managingPhoto.name} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} />
+                    ) : (
+                      <div className="avatar-placeholder" style={{ borderRadius: '50%', display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%', height: '100%', background: 'var(--color-neutral)', fontFamily: 'var(--font-display)', fontWeight: 800, color: 'var(--color-secondary)' }}>{managingPhoto.name[0]}</div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Option 1: File Upload */}
+                <div className="form-group">
+                  <label>Upload Image File</label>
+                  <label className="btn-secondary" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', cursor: 'pointer', padding: '0.75rem' }}>
+                    <Upload size={16} />
+                    Choose File
+                    <input 
+                      type="file" 
+                      hidden 
+                      onChange={(e) => handleImageUpload(managingPhoto.id, managingPhoto.type, e)} 
+                      accept="image/*" 
+                    />
+                  </label>
+                </div>
+
+                {/* Option 2: Image URL */}
+                <div className="form-group">
+                  <label>Image URL</label>
+                  <div style={{ display: 'flex', gap: '0.5rem' }}>
+                    <input 
+                      type="text" 
+                      value={manualUrl} 
+                      onChange={(e) => setManualUrl(e.target.value)} 
+                      placeholder="Paste image URL here..."
+                      style={{ flex: 1 }}
+                    />
+                    <button 
+                      type="button"
+                      className="btn-primary" 
+                      style={{ padding: '0.5rem 1rem', boxShadow: 'none' }}
+                      onClick={() => {
+                        updateOrgImage(managingPhoto.id, managingPhoto.type, manualUrl);
+                        setManagingPhoto(prev => ({ ...prev, image: manualUrl }));
+                      }}
+                    >
+                      Apply
+                    </button>
+                  </div>
+                </div>
+
+                {/* Option 3: Remove Image */}
+                {managingPhoto.image && (
+                  <button 
+                    type="button"
+                    className="btn-secondary" 
+                    style={{ color: '#ef4444', borderColor: 'rgba(239, 68, 68, 0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', marginTop: '1rem' }}
+                    onClick={() => {
+                      if (window.confirm("Remove this photo?")) {
+                        updateOrgImage(managingPhoto.id, managingPhoto.type, null);
+                        setManagingPhoto(prev => ({ ...prev, image: null }));
+                        setManualUrl('');
+                      }
+                    }}
+                  >
+                    <Trash2 size={16} />
+                    Remove Photo
+                  </button>
+                )}
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </section>
   );
 };

@@ -9,10 +9,10 @@ import season2RunnerImg from '../assets/season2-runnerup.jpg';
 
 const TournamentOverview = () => {
   const isAdmin = localStorage.getItem('npl_admin') === 'true';
-  const [tournamentDate, setTournamentDate] = useState("JANUARY 2027");
+  const [tournamentDate, setTournamentDate] = useState("2 JANUARY 2026");
 
   const handleSetDate = () => {
-    const newDate = prompt("Enter New Tournament Date (e.g. JANUARY 2027):", tournamentDate);
+    const newDate = prompt("Enter New Tournament Date (e.g. 2 JANUARY 2026):", tournamentDate);
     if (newDate) setTournamentDate(newDate.toUpperCase());
   };
 
