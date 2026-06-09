@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, useSearchParams } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import Home from './pages/Home';
 import OrganizersPage from './pages/OrganizersPage';
@@ -8,19 +8,11 @@ import GalleryPage from './pages/GalleryPage';
 import UmpiresPage from './pages/UmpiresPage';
 import CommentatorsPage from './pages/CommentatorsPage';
 import ScorersPage from './pages/ScorersPage';
+import AdminLogin from './pages/AdminLogin';
 import { supabase } from './supabase_client';
 import './index.css';
 
-function AdminHandler() {
-  const [searchParams] = useSearchParams();
-  React.useEffect(() => {
-    if (searchParams.get('admin') === 'true') {
-      localStorage.setItem('npl_admin', 'true');
-      window.location.href = '/'; // Refresh to apply changes
-    }
-  }, [searchParams]);
-  return null;
-}
+
 
 function App() {
   React.useEffect(() => {
@@ -41,7 +33,7 @@ function App() {
             <div key={i} className="particle"></div>
           ))}
         </div>
-        <AdminHandler />
+
         <Navbar />
         <main>
           <Routes>
@@ -52,6 +44,7 @@ function App() {
             <Route path="/umpires" element={<UmpiresPage />} />
             <Route path="/commentators" element={<CommentatorsPage />} />
             <Route path="/scorers" element={<ScorersPage />} />
+            <Route path="/admin" element={<AdminLogin />} />
           </Routes>
         </main>
         <footer className="glass footer-section">
