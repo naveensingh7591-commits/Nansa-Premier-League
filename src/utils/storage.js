@@ -23,25 +23,26 @@ export const saveGalleryItems = async (items) => {
   try {
     // 1. Save Locally for instant UI update
     const db = await openDB();
-    const transaction = db.transaction(STORE_NAME, 'readwrite');
-    const store = transaction.objectStore(STORE_NAME);
-    store.put(items, 'current_items');
+    await new Promise((resolve, reject) => {
+      const transaction = db.transaction(STORE_NAME, 'readwrite');
+      const store = transaction.objectStore(STORE_NAME);
+      store.put(items, 'current_items');
+      transaction.oncomplete = () => resolve();
+      transaction.onerror = (event) => reject(event.target.error);
+    });
 
     // 2. Sync to Supabase (Cloud)
-    // We store the items array as a JSON blob in a 'settings' table or similar
-    // For simplicity, we'll try to upsert to a 'gallery' table
     const { error } = await supabase
       .from('site_data')
       .upsert({ id: 'gallery', data: items });
     
-    if (error) console.warn("Supabase Sync Warning:", error.message);
-
-    return new Promise((resolve, reject) => {
-      transaction.oncomplete = () => resolve();
-      transaction.onerror = (event) => reject(event.target.error);
-    });
+    if (error) {
+      console.warn("Supabase Sync Warning:", error.message);
+      throw new Error(error.message);
+    }
   } catch (error) {
     console.error("Storage Save Error:", error);
+    throw error;
   }
 };
 
