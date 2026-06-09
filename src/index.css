@@ -1759,7 +1759,7 @@ section {
   .filter-bar { flex-wrap: wrap; justify-content: center; gap: 0.5rem; }
   .filter-btn { padding: 0.4rem 1rem; font-size: 0.75rem; }
   
-  .hero { padding-top: 20px; justify-content: center; }
+  .hero { justify-content: flex-start; padding-top: 130px; height: 100vh; }
   .hero-btns { flex-direction: column; width: 100%; max-width: 300px; margin: 0 auto; gap: 1rem; }
   .btn-primary, .btn-secondary { width: 100%; text-align: center; }
   
