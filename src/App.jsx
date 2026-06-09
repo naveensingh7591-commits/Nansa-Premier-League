@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import Home from './pages/Home';
 import OrganizersPage from './pages/OrganizersPage';
@@ -11,10 +11,16 @@ import ScorersPage from './pages/ScorersPage';
 import AdminLogin from './pages/AdminLogin';
 import { supabase } from './supabase_client';
 import './index.css';
-
-
+import { Lock, LogOut } from 'lucide-react';
 
 function App() {
+  const isAdmin = localStorage.getItem('npl_admin') === 'true';
+
+  const handleLogout = () => {
+    localStorage.removeItem('npl_admin');
+    window.location.reload();
+  };
+
   React.useEffect(() => {
     const testConnection = async () => {
       const { data, error } = await supabase.from('site_data').select('*').limit(1);
@@ -73,6 +79,18 @@ function App() {
             <div className="developer-tag">
               <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-code-2"><path d="m18 16 4-4-4-4"/><path d="m6 8-4 4 4 4"/><path d="m14.5 4-5 16"/></svg>
               <span>Designed & Developed by <a href="https://www.linkedin.com/in/utkarsh-singh-2b0279387/" target="_blank" rel="noopener noreferrer" className="dev-link"><strong className="dev-name">UTKARSH SINGH</strong></a></span>
+            </div>
+            <div style={{ marginTop: '1rem', display: 'flex', justifyContent: 'center' }}>
+              {isAdmin ? (
+                <button onClick={handleLogout} style={{ background: 'transparent', border: 'none', color: 'var(--color-outline)', display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', fontSize: '0.8rem' }} title="Logout Admin">
+                  <LogOut size={14} />
+                  <span>Admin Logout</span>
+                </button>
+              ) : (
+                <Link to="/admin" style={{ color: 'var(--color-outline)', opacity: 0.5 }} title="Admin Login">
+                  <Lock size={14} />
+                </Link>
+              )}
             </div>
           </div>
         </footer>

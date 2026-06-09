@@ -6,12 +6,6 @@ const Navbar = () => {
   const location = useLocation();
   const [isLightMode, setIsLightMode] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const isAdmin = localStorage.getItem('npl_admin') === 'true';
-
-  const handleLogout = () => {
-    localStorage.removeItem('npl_admin');
-    window.location.reload();
-  };
 
   useEffect(() => {
     const savedTheme = localStorage.getItem('npl_theme');
@@ -68,16 +62,6 @@ const Navbar = () => {
           <button onClick={toggleTheme} className="theme-toggle-btn" aria-label="Toggle Theme">
             {isLightMode ? <Moon size={20} /> : <Sun size={20} />}
           </button>
-          {isAdmin ? (
-            <button className="btn-admin-logout" onClick={handleLogout} title="Logout Admin">
-              <LogOut size={18} />
-              <span>Logout</span>
-            </button>
-          ) : (
-            <Link to="/admin" className="btn-admin-login" title="Admin Login">
-              <Lock size={16} />
-            </Link>
-          )}
           <a href="https://wa.me/918090964913" target="_blank" rel="noopener noreferrer" className="btn-secondary join-btn" style={{ textDecoration: 'none' }}>
             Join NPL
           </a>
