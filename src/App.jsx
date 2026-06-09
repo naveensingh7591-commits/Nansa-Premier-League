@@ -60,7 +60,11 @@ function App() {
               </a>
               <a href="https://wa.me/918090964913" target="_blank" rel="noopener noreferrer" className="social-link whatsapp">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-message-circle"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/><path d="M8 12h.01"/><path d="M12 12h.01"/><path d="M16 12h.01"/></svg>
-                <span>WhatsApp</span>
+                <span>WhatsApp (Primary)</span>
+              </a>
+              <a href="https://wa.me/917310065275" target="_blank" rel="noopener noreferrer" className="social-link whatsapp">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-message-circle"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/><path d="M8 12h.01"/><path d="M12 12h.01"/><path d="M16 12h.01"/></svg>
+                <span>WhatsApp (Secondary)</span>
               </a>
             </div>
           </div>
