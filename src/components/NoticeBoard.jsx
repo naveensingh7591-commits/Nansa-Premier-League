@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { supabase } from '../supabase_client';
 import { Edit2, Save, X, Megaphone } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const NoticeBoard = () => {
   const isAdmin = localStorage.getItem('npl_admin') === 'true';
@@ -68,11 +69,23 @@ const NoticeBoard = () => {
 
   return (
     <section className="notice-board-section" style={{ padding: '4rem 20px', maxWidth: '800px', margin: '0 auto' }}>
-      <div className="glass" style={{ padding: '2rem', borderRadius: 'var(--radius-xl)', position: 'relative' }}>
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.5 }}
+        className="glass" 
+        style={{ padding: '2rem', borderRadius: 'var(--radius-xl)', position: 'relative', border: '1px solid rgba(234, 179, 8, 0.2)', boxShadow: '0 10px 30px rgba(0,0,0,0.2)' }}
+      >
         
         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem', borderBottom: '1px solid var(--glass-border)', paddingBottom: '1rem' }}>
-          <Megaphone size={28} color="var(--color-secondary)" />
-          <h2 style={{ fontSize: '1.5rem', margin: 0 }}>Notice Board</h2>
+          <motion.div
+            animate={{ rotate: [-5, 5, -5] }}
+            transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
+          >
+            <Megaphone size={28} color="var(--color-secondary)" />
+          </motion.div>
+          <h2 style={{ fontSize: '1.5rem', margin: 0, color: 'var(--color-secondary)' }}>Notice Board</h2>
           
           {isAdmin && !isEditing && (
             <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '1rem' }}>
@@ -84,39 +97,53 @@ const NoticeBoard = () => {
           )}
         </div>
 
-        {isEditing ? (
-          <div className="edit-container">
-            <textarea 
-              value={tempNotices}
-              onChange={(e) => setTempNotices(e.target.value)}
-              style={{ 
-                width: '100%', 
-                minHeight: '150px', 
-                background: 'rgba(0,0,0,0.2)', 
-                color: 'white', 
-                border: '1px solid var(--color-secondary)', 
-                borderRadius: 'var(--radius-md)', 
-                padding: '1rem',
-                fontFamily: 'inherit',
-                fontSize: '1rem',
-                marginBottom: '1rem'
-              }}
-            />
-            <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end' }}>
-              <button onClick={handleCancel} className="btn-secondary" style={{ padding: '0.5rem 1rem' }}>
-                <X size={16} style={{ marginRight: '6px' }} /> Cancel
-              </button>
-              <button onClick={handleSave} className="btn-primary" style={{ padding: '0.5rem 1rem' }}>
-                <Save size={16} style={{ marginRight: '6px' }} /> Save
-              </button>
-            </div>
-          </div>
-        ) : (
-          <div style={{ whiteSpace: 'pre-wrap', lineHeight: '1.6', color: 'var(--color-on-surface)' }}>
-            {notices}
-          </div>
-        )}
-      </div>
+        <AnimatePresence mode="wait">
+          {isEditing ? (
+            <motion.div 
+              key="edit"
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              className="edit-container"
+            >
+              <textarea 
+                value={tempNotices}
+                onChange={(e) => setTempNotices(e.target.value)}
+                style={{ 
+                  width: '100%', 
+                  minHeight: '150px', 
+                  background: 'rgba(0,0,0,0.2)', 
+                  color: 'white', 
+                  border: '1px solid var(--color-secondary)', 
+                  borderRadius: 'var(--radius-md)', 
+                  padding: '1rem',
+                  fontFamily: 'inherit',
+                  fontSize: '1rem',
+                  marginBottom: '1rem'
+                }}
+              />
+              <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end' }}>
+                <button onClick={handleCancel} className="btn-secondary" style={{ padding: '0.5rem 1rem' }}>
+                  <X size={16} style={{ marginRight: '6px' }} /> Cancel
+                </button>
+                <button onClick={handleSave} className="btn-primary" style={{ padding: '0.5rem 1rem' }}>
+                  <Save size={16} style={{ marginRight: '6px' }} /> Save
+                </button>
+              </div>
+            </motion.div>
+          ) : (
+            <motion.div 
+              key="view"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              style={{ whiteSpace: 'pre-wrap', lineHeight: '1.6', color: 'var(--color-on-surface)', fontSize: '1.1rem' }}
+            >
+              {notices}
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </motion.div>
     </section>
   );
 };
