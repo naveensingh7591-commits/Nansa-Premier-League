@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Maximize2, PlayCircle, Plus, Upload, Image as ImageIcon, Trash2 } from 'lucide-react';
 import { saveGalleryItems, loadGalleryItems } from '../utils/storage';
@@ -22,6 +22,7 @@ const Gallery = ({ initialFilter = 'All' }) => {
     images: [] 
   });
   const fileInputRef = useRef(null);
+  const adminEdited = useRef(false);
 
   useEffect(() => {
     if (filter !== 'All') {
@@ -68,13 +69,17 @@ const Gallery = ({ initialFilter = 'All' }) => {
     initStorage();
   }, []);
 
-  // Save items whenever they change, but ONLY after initial load is done
+  // Save items ONLY when admin has explicitly made changes
   useEffect(() => {
-    if (isLoaded) {
+    if (isLoaded && adminEdited.current) {
       setSyncStatus('Syncing to Cloud...');
       saveGalleryItems(items).then(() => {
         setSyncStatus('Cloud Synced ✓');
         setTimeout(() => setSyncStatus(''), 2000);
+      }).catch((err) => {
+        console.error('Failed to save gallery items:', err);
+        setSyncStatus('Sync Failed ✗');
+        setTimeout(() => setSyncStatus(''), 3000);
       });
     }
   }, [items, isLoaded]);
@@ -149,6 +154,7 @@ const Gallery = ({ initialFilter = 'All' }) => {
       title: uploadData.title || img.name
     }));
 
+    adminEdited.current = true;
     setItems([...newItems, ...items]);
     setIsManageOpen(false);
     setUploadData({ title: '', category: filter === 'All' ? 'Celebration' : filter, images: [] });
@@ -157,6 +163,7 @@ const Gallery = ({ initialFilter = 'All' }) => {
   const handleDeleteItem = (id, e) => {
     e.stopPropagation();
     if (window.confirm('Are you sure you want to delete this photo from the gallery?')) {
+      adminEdited.current = true;
       setItems(items.filter(item => item.id !== id));
     }
   };

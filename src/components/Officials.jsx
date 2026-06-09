@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Mic2, Gavel, ClipboardEdit, Edit3, X, Upload, Trash2, Plus, Camera } from 'lucide-react';
 import { supabase } from '../supabase_client';
@@ -20,6 +20,7 @@ const Officials = () => {
   const [tempUmpires, setTempUmpires] = useState([]);
   const [managingPhoto, setManagingPhoto] = useState(null); // { id, name, image }
   const [manualUrl, setManualUrl] = useState('');
+  const adminEdited = useRef(false);
 
   // Load from Supabase on mount
   useEffect(() => {
@@ -38,13 +39,15 @@ const Officials = () => {
     loadUmpires();
   }, []);
 
-  // Sync back to Supabase
+  // Sync back to Supabase ONLY when admin has explicitly made changes
   useEffect(() => {
-    if (isLoaded) {
+    if (isLoaded && adminEdited.current) {
       supabase.from('site_data').upsert({
         id: 'umpires',
         data: umpiresList
-      }).then();
+      }).then(({ error }) => {
+        if (error) console.error('Failed to save umpires:', error.message);
+      });
     }
   }, [umpiresList, isLoaded]);
 
@@ -110,6 +113,7 @@ const Officials = () => {
     const updateFn = (list) => list.map(item => item.id === id ? { ...item, image: imageUrl } : item);
     const umpire = umpiresList.find(u => u.id === id);
     if (imageUrl && umpire) addToGallery(imageUrl, umpire.name, umpire.role || 'Official Umpire');
+    adminEdited.current = true;
     setUmpiresList(updateFn);
   };
 
@@ -293,6 +297,7 @@ const Officials = () => {
                   className="btn-primary" 
                   style={{ flex: 1, boxShadow: 'none' }}
                   onClick={() => {
+                    adminEdited.current = true;
                     setUmpiresList(tempUmpires);
                     setIsManagingUmpires(false);
                   }}

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Calendar, MapPin, Users, Clock, X, Edit3 } from 'lucide-react';
 import { supabase } from '../supabase_client';
@@ -17,6 +17,7 @@ const TournamentOverview = () => {
   const [isLoaded, setIsLoaded] = useState(false);
   const [isManagingSchedule, setIsManagingSchedule] = useState(false);
   const [tempSchedule, setTempSchedule] = useState({ venue: '', teamsCount: '', timings: '', tournamentDate: '' });
+  const adminEdited = useRef(false);
 
   useEffect(() => {
     const loadSchedule = async () => {
@@ -38,17 +39,22 @@ const TournamentOverview = () => {
   }, []);
 
   useEffect(() => {
-    if (isLoaded) {
+    if (isLoaded && adminEdited.current) {
       supabase.from('site_data').upsert({
         id: 'schedule',
         data: { venue, teamsCount, timings, tournamentDate }
-      }).then();
+      }).then(({ error }) => {
+        if (error) console.error('Failed to save schedule:', error.message);
+      });
     }
   }, [venue, teamsCount, timings, tournamentDate, isLoaded]);
 
   const handleSetDate = () => {
     const newDate = prompt("Enter New Tournament Date (e.g. 2 JANUARY 2026):", tournamentDate);
-    if (newDate) setTournamentDate(newDate.toUpperCase());
+    if (newDate) {
+      adminEdited.current = true;
+      setTournamentDate(newDate.toUpperCase());
+    }
   };
 
   const details = [
@@ -194,6 +200,7 @@ const TournamentOverview = () => {
 
               <form onSubmit={(e) => {
                 e.preventDefault();
+                adminEdited.current = true;
                 setVenue(tempSchedule.venue);
                 setTeamsCount(tempSchedule.teamsCount);
                 setTimings(tempSchedule.timings);

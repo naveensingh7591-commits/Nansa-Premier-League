@@ -30,6 +30,7 @@ const Organizers = () => {
   const [manualUrl, setManualUrl] = React.useState('');
   const [managingSegment, setManagingSegment] = React.useState(null); // 'main', 'lead', or 'field'
   const [tempSegmentList, setTempSegmentList] = React.useState([]);
+  const adminEdited = React.useRef(false);
 
   React.useEffect(() => {
     const loadData = async () => {
@@ -45,11 +46,13 @@ const Organizers = () => {
   }, []);
 
   React.useEffect(() => {
-    if (isLoaded) {
+    if (isLoaded && adminEdited.current) {
       supabase.from('site_data').upsert({
         id: 'organizers',
         data: { main: mainOrganizers, lead: leadCoOrganizers, co: coOrganizers }
-      }).then();
+      }).then(({ error }) => {
+        if (error) console.error('Failed to save organizers:', error.message);
+      });
     }
   }, [mainOrganizers, leadCoOrganizers, coOrganizers, isLoaded]);
 
@@ -113,6 +116,7 @@ const Organizers = () => {
 
   const updateOrgImage = (id, type, imageUrl) => {
     const updateFn = (list) => list.map(item => item.id === id ? { ...item, image: imageUrl } : item);
+    adminEdited.current = true;
     
     if (type === 'main') {
       const org = mainOrganizers.find(o => o.id === id);
@@ -535,6 +539,7 @@ const Organizers = () => {
                   className="btn-primary" 
                   style={{ flex: 1, boxShadow: 'none' }}
                   onClick={() => {
+                    adminEdited.current = true;
                     if (managingSegment === 'main') {
                       setMainOrganizers(tempSegmentList);
                     } else if (managingSegment === 'lead') {
