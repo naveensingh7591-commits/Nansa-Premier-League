@@ -79,16 +79,13 @@ function App() {
             <div className="developer-tag">
               <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-code-2"><path d="m18 16 4-4-4-4"/><path d="m6 8-4 4 4 4"/><path d="m14.5 4-5 16"/></svg>
               <span>Designed & Developed by <a href="https://www.linkedin.com/in/utkarsh-singh-2b0279387/" target="_blank" rel="noopener noreferrer" className="dev-link"><strong className="dev-name">UTKARSH SINGH</strong></a></span>
-            </div>
-            <div style={{ marginTop: '1rem', display: 'flex', justifyContent: 'center' }}>
               {isAdmin ? (
-                <button onClick={handleLogout} style={{ background: 'transparent', border: 'none', color: 'var(--color-outline)', display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', fontSize: '0.8rem' }} title="Logout Admin">
-                  <LogOut size={14} />
-                  <span>Admin Logout</span>
+                <button onClick={handleLogout} style={{ background: 'transparent', border: 'none', color: 'var(--color-outline)', display: 'flex', alignItems: 'center', cursor: 'pointer', padding: 0 }} title="Logout Admin">
+                  <LogOut size={13} />
                 </button>
               ) : (
-                <Link to="/admin" style={{ color: 'var(--color-outline)', opacity: 0.5 }} title="Admin Login">
-                  <Lock size={14} />
+                <Link to="/admin" style={{ color: 'var(--color-outline)', opacity: 0.4, display: 'flex', alignItems: 'center' }} title="Admin Login">
+                  <Lock size={13} />
                 </Link>
               )}
             </div>
