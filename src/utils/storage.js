@@ -102,11 +102,11 @@ export const loadGalleryItems = async () => {
     return item;
   });
 
+  // Separate custom items from default items to avoid duplicates
   const defaultIds = initialGalleryItems.map(item => item.id);
-  const hasAnyDefault = restoredItems.some(item => defaultIds.includes(item.id));
-  if (!hasAnyDefault) {
-    // Prepend all initial gallery items if none of them are present
-    return [...initialGalleryItems, ...restoredItems];
-  }
-  return restoredItems;
+  const customItems = restoredItems.filter(item => !defaultIds.includes(item.id));
+
+  // Merge them: return all initial gallery items first, followed by custom items.
+  // This guarantees that all default mock photos are always restored on every load.
+  return [...initialGalleryItems, ...customItems];
 };
