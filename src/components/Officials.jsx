@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Mic2, Gavel, ClipboardEdit, Edit3, X, Upload, Trash2, Plus, Camera } from 'lucide-react';
+import { Gavel, Edit3, X, Upload, Trash2, Plus, Camera } from 'lucide-react';
 import { supabase } from '../supabase_client';
 import { initialGalleryItems } from '../utils/initialGallery';
 

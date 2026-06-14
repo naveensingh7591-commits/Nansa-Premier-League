@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Phone, ShieldCheck, Users, Edit3, Camera, X, Upload, Link, Trash2, Plus } from 'lucide-react';
+import { Phone, ShieldCheck, Users, Edit3, Camera, X, Upload, Trash2, Plus } from 'lucide-react';
 import { supabase } from '../supabase_client';
 import { initialGalleryItems } from '../utils/initialGallery';
 

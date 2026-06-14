@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Home, Calendar, Image as ImageIcon, Info, Gavel, Mic2, ClipboardEdit, Sun, Moon, Menu, X, Lock, LogOut } from 'lucide-react';
+import { Sun, Moon, Menu, X } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 
 const Navbar = () => {
