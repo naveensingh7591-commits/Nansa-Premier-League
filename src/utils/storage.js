@@ -92,11 +92,21 @@ export const loadGalleryItems = async () => {
   if (!loadedItems) {
     return initialGalleryItems;
   }
+  
+  // Dynamically restore correct URLs for default mock items (to prevent dev vs prod URL issues)
+  const restoredItems = loadedItems.map(item => {
+    const defaultItem = initialGalleryItems.find(d => d.id === item.id);
+    if (defaultItem) {
+      return { ...item, url: defaultItem.url };
+    }
+    return item;
+  });
+
   const defaultIds = initialGalleryItems.map(item => item.id);
-  const hasAnyDefault = loadedItems.some(item => defaultIds.includes(item.id));
+  const hasAnyDefault = restoredItems.some(item => defaultIds.includes(item.id));
   if (!hasAnyDefault) {
     // Prepend all initial gallery items if none of them are present
-    return [...initialGalleryItems, ...loadedItems];
+    return [...initialGalleryItems, ...restoredItems];
   }
-  return loadedItems;
+  return restoredItems;
 };

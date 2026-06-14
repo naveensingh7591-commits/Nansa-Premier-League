@@ -29,7 +29,16 @@ const Officials = () => {
       try {
         const { data } = await supabase.from('site_data').select('data').eq('id', 'umpires').single();
         if (data && data.data) {
-          setUmpiresList(data.data);
+          const restored = data.data.map(u => {
+            if (u.id === 'u1' && (!u.image || u.image.includes('/assets/') || u.image.includes('/src/assets/'))) {
+              return { ...u, image: buntyImg };
+            }
+            if (u.id === 'u2' && (!u.image || u.image.includes('/assets/') || u.image.includes('/src/assets/'))) {
+              return { ...u, image: pramodImg };
+            }
+            return u;
+          });
+          setUmpiresList(restored);
         }
       } catch (err) {
         console.error("Failed to load umpires from Supabase:", err);
