@@ -1,4 +1,5 @@
 import { supabase } from '../supabase_client';
+import { initialGalleryItems } from './initialGallery';
 
 // Native IndexedDB wrapper for large data storage (Local Fallback)
 const DB_NAME = 'NPL_Portal_DB';
@@ -65,24 +66,37 @@ export const loadGalleryItems = async () => {
     console.warn("Supabase connection failed, falling back to local storage:", error);
   }
 
+  let loadedItems = null;
   // If cloud fetch was successful and has data, return it
   if (cloudItems) {
-    return cloudItems;
+    loadedItems = cloudItems;
+  } else {
+    // 2. Fallback to Local IndexedDB if Cloud fails or has no data
+    try {
+      const db = await openDB();
+      const transaction = db.transaction(STORE_NAME, 'readonly');
+      const store = transaction.objectStore(STORE_NAME);
+      const request = store.get('current_items');
+      
+      const localResult = await new Promise((resolve, reject) => {
+        request.onsuccess = () => resolve(request.result || null);
+        request.onerror = (event) => reject(event.target.error);
+      });
+      loadedItems = localResult;
+    } catch (localError) {
+      console.warn("Local database load failed:", localError);
+    }
   }
 
-  // 2. Fallback to Local IndexedDB if Cloud fails or has no data
-  try {
-    const db = await openDB();
-    const transaction = db.transaction(STORE_NAME, 'readonly');
-    const store = transaction.objectStore(STORE_NAME);
-    const request = store.get('current_items');
-    
-    return new Promise((resolve, reject) => {
-      request.onsuccess = () => resolve(request.result || null);
-      request.onerror = (event) => reject(event.target.error);
-    });
-  } catch (localError) {
-    console.error("Local database load failed:", localError);
-    return null;
+  // Ensure default items exist in the returned list
+  if (!loadedItems) {
+    return initialGalleryItems;
   }
+  const defaultIds = initialGalleryItems.map(item => item.id);
+  const hasAnyDefault = loadedItems.some(item => defaultIds.includes(item.id));
+  if (!hasAnyDefault) {
+    // Prepend all initial gallery items if none of them are present
+    return [...initialGalleryItems, ...loadedItems];
+  }
+  return loadedItems;
 };

@@ -2,6 +2,7 @@ import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Phone, ShieldCheck, Users, Edit3, Camera, X, Upload, Link, Trash2, Plus } from 'lucide-react';
 import { supabase } from '../supabase_client';
+import { initialGalleryItems } from '../utils/initialGallery';
 
 const Organizers = () => {
   const isAdmin = localStorage.getItem('npl_admin') === 'true';
@@ -88,7 +89,7 @@ const Organizers = () => {
   const addToGallery = async (imageUrl, name, role) => {
     try {
       const { data } = await supabase.from('site_data').select('data').eq('id', 'gallery').single();
-      let galleryItems = (data && data.data) ? data.data : [];
+      let galleryItems = (data && data.data && data.data.length > 0) ? data.data : initialGalleryItems;
       
       const title = `${name} - ${role}`;
       const newItem = {

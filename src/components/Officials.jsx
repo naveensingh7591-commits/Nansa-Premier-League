@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Mic2, Gavel, ClipboardEdit, Edit3, X, Upload, Trash2, Plus, Camera } from 'lucide-react';
 import { supabase } from '../supabase_client';
+import { initialGalleryItems } from '../utils/initialGallery';
 
 import buntyImg from '../assets/bunty-singh.jpg';
 import pramodImg from '../assets/pramod-lefty.jpg';
@@ -83,7 +84,7 @@ const Officials = () => {
   const addToGallery = async (imageUrl, name, role) => {
     try {
       const { data } = await supabase.from('site_data').select('data').eq('id', 'gallery').single();
-      let galleryItems = (data && data.data) ? data.data : [];
+      let galleryItems = (data && data.data && data.data.length > 0) ? data.data : initialGalleryItems;
       
       const title = `${name} - ${role}`;
       const newItem = {
