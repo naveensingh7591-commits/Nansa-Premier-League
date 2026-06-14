@@ -207,7 +207,7 @@ const Gallery = ({ initialFilter = 'All' }) => {
     exit: (dir) => ({ x: dir > 0 ? '-100%' : '100%', opacity: 0, scale: 0.95 }),
   };
 
-  const currentItem = filteredItems[currentIndex];
+  const currentItem = filteredItems[currentIndex] || {};
 
   // Thumbnail strip: show up to 5 around the current index
   const getVisibleThumbs = () => {
